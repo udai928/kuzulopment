@@ -12,15 +12,6 @@ public class DemoroidActivity extends Activity {
         setContentView(R.layout.activity_demoroid);
         android.util.Log.v("Demoroid","onCreat()");
     }
-    
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.demoroid, menu);
-//        return true;
-//    }
-//    
-
 
 	@Override
 	protected void onStart(){
