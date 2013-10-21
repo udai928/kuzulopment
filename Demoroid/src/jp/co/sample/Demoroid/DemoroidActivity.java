@@ -8,48 +8,19 @@ public class DemoroidActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    	android.util.Log.v("タグ１","開始メッセージ");
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_demoroid);
-        android.util.Log.v("Demoroid","onCreat()");
+        android.util.Log.v("タグ２","終了メッセージ");
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.demoroid, menu);
+        return true;
     }
     
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.demoroid, menu);
-//        return true;
-//    }
-//    
-
-
-	@Override
-	protected void onStart(){
-		super.onStart();
-		android.util.Log.v("Demoroid","onStart()");
-	}
-	@Override
-	protected void onRestart(){
-		super.onRestart();
-		android.util.Log.v("Demoroid","onRestart()");
-	}
-	@Override
-	protected void onResume(){
-		super.onResume();
-		android.util.Log.v("Demoroid","onResume()");
-	}
-	@Override
-	protected void onPause(){
-		super.onPause();
-		android.util.Log.v("Demoroid","onPause()");
-	}
-	@Override
-	protected void onStop(){
-		super.onStop();
-		android.util.Log.v("Demoroid","onStop()");
-	}
-	@Override
-	protected void onDestroy(){
-		super.onDestroy();
-		android.util.Log.v("Demoroid","onDestroy()");
-	}
-}	
+}
+//github test
