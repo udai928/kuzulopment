@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_item1">メニュー１</string>
+    <string name="menu_item2">メニュー２</string>
+    <string name="menu_item3">メニュー３</string>
+    <string name="menu_item4">終了</string>
+    
+</resources>

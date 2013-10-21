@@ -4,5 +4,9 @@
     <string name="app_name">GuiSample</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="menu_item1">Menu1</string>
+    <string name="menu_item2">Menu2</string>
+    <string name="menu_item3">Menu3</string>
+    <string name="menu_item4">Finish</string>
 
 </resources>
