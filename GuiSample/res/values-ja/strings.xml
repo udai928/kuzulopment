@@ -4,5 +4,9 @@
     <string name="menu_item2">メニュー２</string>
     <string name="menu_item3">メニュー３</string>
     <string name="menu_item4">終了</string>
-    
+	<string name="input_guide">ユーザーとパスワードを入力</string>
+	<string name="user">ユーザー</string>
+	<string name="password">パスワード</string>
+	<string name="login">ログイン</string>
+	<string name="remember">ユーザーとパスワードを記憶</string>    
 </resources>

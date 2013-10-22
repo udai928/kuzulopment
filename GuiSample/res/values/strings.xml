@@ -8,5 +8,10 @@
     <string name="menu_item2">Menu2</string>
     <string name="menu_item3">Menu3</string>
     <string name="menu_item4">Finish</string>
-
+	<string name="input_guide">Please input user and password</string>
+	<string name="user">User</string>
+	<string name="password">Password</string>
+	<string name="login">Login</string>
+	<string name="remember">Remember</string>
+	
 </resources>
