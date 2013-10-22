@@ -3,7 +3,10 @@ package jp.co.sample.GuiSample;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.KeyEvent;
@@ -18,18 +21,25 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class GuiSampleActivity extends Activity {
-
+public class GuiSampleActivity extends Activity implements Runnable{	
+	private ProgressDialog progressDialog = null;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gui_sample);
+        //progressDialog = ProgressDialog.show(this,"","Loding...", true);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMessage("Loading...");
+        progressDialog.show();
+        new Thread(this).start();
         Button button =(Button)findViewById(R.id.button1);
         button.setOnClickListener(new OnClickListener(){
         	public void onClick(View v){
         		EditText edit = (EditText)findViewById(R.id.editText1);
         		if (edit.getText().length() == 0){
-        				TextView text = (TextView)findViewById(R.id.textView1);
+        				TextView text = (TextView)findViewById(R.id.dialogMsg);
         				text.setText("Error input user");
         		}
         	}
@@ -72,9 +82,11 @@ public class GuiSampleActivity extends Activity {
     		break;
     	case R.id.item2:
     		android.util.Log.v("onOptionsItemSelected","Menu2");
+    		showChooseColorDialog();
     		break;
     	case R.id.item3:
     		android.util.Log.v("onOptionsItemSelected","Menu3");
+    		showCustomDialog();
     		break;
     	case R.id.item4:
     		android.util.Log.v("onOptionsItemSelected","Menu4");
@@ -98,10 +110,57 @@ public class GuiSampleActivity extends Activity {
     				android.util.Log.v("dialog", "onClick no");
     			}
     		})
-    		
-    		
-    		
-    		
     		.show();
     }
+    private void showChooseColorDialog(){
+    	CharSequence[] items ={"Red", "Green", "Blue"};
+    	new AlertDialog.Builder(this)
+    		.setTitle("Choose Color")
+    		.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener(){
+//    		.setMultiChoiceItems(items, , new DialogInterface.OnClickListener(){
+    	    			public void onClick(DialogInterface dialog, int which){
+    				LinearLayout layout = (LinearLayout)findViewById(R.id.LinearLayout2);
+    				switch(which){
+    				case 0:
+    					layout.setBackgroundColor(Color.RED);
+    				break;
+    				case 1:
+    					layout.setBackgroundColor(Color.GREEN);
+    				break;
+    				case 2:
+    					layout.setBackgroundColor(Color.BLUE);
+    				break;
+    				}
+    			}
+    		})
+    		.show();
+    }
+
+
+	@Override
+	public void run() {
+		try{
+			Thread.sleep(1000);
+			progressDialog.setProgress(25);
+			Thread.sleep(1000);
+			progressDialog.setProgress(50);
+			Thread.sleep(1000);
+			progressDialog.setProgress(75);
+			Thread.sleep(1000);
+			progressDialog.setProgress(100);
+		}catch(InterruptedException e){
+			e.printStackTrace();
+		}if(progressDialog != null){
+			progressDialog.dismiss();
+			progressDialog =null;
+		}
+	}
+	private void showCustomDialog(){
+		Dialog dialog = new Dialog(this);
+		dialog.setContentView(R.layout.dialog);
+		dialog.setTitle("Custom Dialog");
+		TextView text =(TextView)dialog.findViewById(R.id.dialogMsg);
+		text.setText("ダイアログメッセージを変更");
+		dialog.show();
+	}
 }
