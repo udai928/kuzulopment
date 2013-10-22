@@ -13,5 +13,9 @@
 	<string name="password">Password</string>
 	<string name="login">Login</string>
 	<string name="remember">Remember</string>
-	
+	<string name="dialog_title">Test Dialog</string>
+	<string name="dialog_message">Message Dialog</string>
+	<string name="dialog_yes">Yes</string>
+	<string name="dialog_no">No</string>
+			
 </resources>

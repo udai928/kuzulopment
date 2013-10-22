@@ -2,6 +2,8 @@ package jp.co.sample.GuiSample;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.KeyEvent;
@@ -41,10 +43,10 @@ public class GuiSampleActivity extends Activity {
 				return false;
 			}		
 		});
-		
+		//↓は、javaのコードから画面のチェックボックスを追加する
 		LinearLayout layout = (LinearLayout)findViewById(R.id.LinearLayout2);
 		CheckBox check = new CheckBox(this);
-		check.setText("Remember user and password");
+		check.setText(R.string.remember);
 		check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
 				android.util.Log.v("OnCheckedChanged","check " + isChecked);
@@ -66,6 +68,7 @@ public class GuiSampleActivity extends Activity {
     	switch(item.getItemId()){	
     	case R.id.item1:
     		android.util.Log.v("onOptionsItemSelected","Menu1");
+    		showDialog();
     		break;
     	case R.id.item2:
     		android.util.Log.v("onOptionsItemSelected","Menu2");
@@ -79,5 +82,26 @@ public class GuiSampleActivity extends Activity {
     		break;
     	}
     	return true;
+    }
+    
+    private void showDialog(){
+    	new AlertDialog.Builder(this)	
+    		.setTitle(R.string.dialog_title)
+    		.setMessage(R.string.dialog_message)
+    		.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener(){
+    			public void onClick(DialogInterface diaog, int which){
+    				android.util.Log.v("dialog", "onClick yes");
+    			}
+    		})
+    		.setNegativeButton(R.string.dialog_no, new DialogInterface.OnClickListener(){
+    			public void onClick(DialogInterface diaog, int which){
+    				android.util.Log.v("dialog", "onClick no");
+    			}
+    		})
+    		
+    		
+    		
+    		
+    		.show();
     }
 }

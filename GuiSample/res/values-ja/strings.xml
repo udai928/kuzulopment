@@ -9,4 +9,11 @@
 	<string name="password">パスワード</string>
 	<string name="login">ログイン</string>
 	<string name="remember">ユーザーとパスワードを記憶</string>    
+	<string name="dialog_title">ダイアログのテスト</string>
+	<string name="dialog_message">ダイアログのメッセージ</string>
+	<string name="dialog_yes">はい</string>
+	<string name="dialog_no">いいえ</string>
+		
+
+		
 </resources>
