@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -21,6 +23,8 @@ public class MyView extends View implements GestureDetector.OnGestureListener,
 	private float x = 0f;
 	private float y = 0f;
 	private float scale = 1f;
+	private SoundPool soundPool = null;
+	private int soundId = 0;
 	
 	public MyView(Context context) {
 		super(context);
@@ -28,6 +32,8 @@ public class MyView extends View implements GestureDetector.OnGestureListener,
 		bitmap = BitmapFactory.decodeResource(context.getResources(),  R.drawable.ic_launcher);
 		gestureDetector = new GestureDetector(context, this);
 		scaleGestureDetector = new ScaleGestureDetector(context, this);
+		soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+		soundId = soundPool.load(context,  R.raw.fallbackring, 1);
 	}
 	@Override
 	protected void onDraw(Canvas canvas){
@@ -61,8 +67,8 @@ public class MyView extends View implements GestureDetector.OnGestureListener,
 	}
 	@Override
 	public boolean onDown(MotionEvent e) {
-		// TODO 自動生成されたメソッド・スタブ
-		return false;
+		soundPool.play(soundId,  1f, 1f, 0, 0, 1f);
+		return true;
 	}
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
