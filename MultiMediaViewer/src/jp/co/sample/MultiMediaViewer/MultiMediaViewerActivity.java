@@ -1,7 +1,10 @@
 package jp.co.sample.MultiMediaViewer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
@@ -13,8 +16,13 @@ import android.content.DialogInterface;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.ScaleAnimation;
@@ -31,6 +39,9 @@ public class MultiMediaViewerActivity extends Activity {
 	private Button recorderStop = null;
 	private Button recorderRecord = null;
 	private String soundFilePath = null;
+	private SurfaceView cameraView = null;
+	private Camera camera = null;
+	private String pictureFilePath = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +59,8 @@ public class MultiMediaViewerActivity extends Activity {
         }
         File file = new File(dir,"record.3gp");
         soundFilePath = file.getAbsolutePath();
+        file = new File(dir, "picture.jpg");
+        pictureFilePath = file.getAbsolutePath();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -115,10 +128,13 @@ public class MultiMediaViewerActivity extends Activity {
     	switch(item.getItemId()){
     	case R.id.item1:
     		setupAudioView();
-    	break;
+    		break;
     	case R.id.item2:
     		setupAudioRecordView();
-    	break;
+    		break;
+    	case R.id.item3:
+    		setupCameraView();
+    		break;
     	}
     	return true;
     }
@@ -167,7 +183,7 @@ public class MultiMediaViewerActivity extends Activity {
     	});
     	layout.addView(recorderStop);
     	recorderRecord = new Button(this);
-    	recorderRecord.setText("play");
+    	recorderRecord.setText("record");
     	recorderRecord.setOnClickListener(new OnClickListener(){
     		public void onClick(View v){
     			if(recorder == null){
@@ -194,4 +210,78 @@ public class MultiMediaViewerActivity extends Activity {
     	layout.addView(recorderRecord);
     	setContentView(layout);
     }
+    private void setupCameraView(){
+    	cameraView = new SurfaceView(this);
+    	SurfaceHolder holder = cameraView.getHolder();
+    	holder.addCallback(new SurfaceHolder.Callback(){
+    		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
+    			try{
+    				WindowManager manager = (WindowManager)getSystemService(WINDOW_SERVICE);
+    				int r = manager.getDefaultDisplay().getRotation();
+    				int d = 0;
+    				switch(r){
+    				case Surface.ROTATION_0: d = 90; break;
+    				case Surface.ROTATION_90: d = 0; break;
+    				case Surface.ROTATION_180: d = 270; break;
+    				case Surface.ROTATION_270: d = 180; break;
+    				}
+    				camera.setDisplayOrientation(d);
+    				camera.startPreview();
+    				
+    			}
+    			catch(Exception e){
+    				e.printStackTrace();
+    			}
+    		}
+    		public void surfaceCreated(SurfaceHolder holder){
+    			try{
+    				camera = Camera.open();
+    				camera.setPreviewDisplay(holder);
+    			}
+       			catch(Exception e){
+    				e.printStackTrace();
+       			}
+    		}
+    		public void surfaceDestroyed(SurfaceHolder holder){
+    			camera.setPreviewCallback(null);
+    			camera.stopPreview();
+    			camera.release();
+    			camera = null;
+    		}
+    	});
+    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    	setContentView(cameraView);
+    }
+    private void callTakePicture(){
+    	try{
+    		camera.takePicture(null, null, new Camera.PictureCallback(){
+    			public void onPictureTaken(byte[] data, Camera camera){    			
+    				try{
+    					FileOutputStream fos = new FileOutputStream(pictureFilePath);
+    					fos.write(data);
+    					fos.close();
+    					camera.startPreview();
+    				}
+    				catch(Exception e){
+    					e.printStackTrace();
+    				}
+    			}
+    		});
+    	}
+    	catch(Exception e){
+    	e.printStackTrace();
+    	}
+    }
+    @Override
+    public boolean onTouchEvent(MotionEvent e){
+    	int action = e.getAction() & MotionEvent.ACTION_MASK;
+    	if(action == MotionEvent.ACTION_DOWN){
+    		if(cameraView != null){
+    			callTakePicture();
+    		}
+    	}
+    	return true;
+    }
+    
+    
 }
