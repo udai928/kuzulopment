@@ -2,14 +2,14 @@ package jp.co.sample.MultiMediaViewer;
 
 import java.io.File;
 import java.io.FileOutputStream;
-
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera.CameraInfo;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -233,7 +233,7 @@ public class MultiMediaViewerActivity extends Activity {
     				e.printStackTrace();
     			}
     		}
-    		public void surfaceCreated(SurfaceHolder holder){
+    		@SuppressLint("NewApi") public void surfaceCreated(SurfaceHolder holder){
     			try{
     				camera = Camera.open();
     				camera.setPreviewDisplay(holder);
