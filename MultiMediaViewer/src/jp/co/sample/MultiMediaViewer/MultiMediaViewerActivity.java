@@ -42,6 +42,11 @@ public class MultiMediaViewerActivity extends Activity {
 	private SurfaceView cameraView = null;
 	private Camera camera = null;
 	private String pictureFilePath = null;
+	private SurfaceView videoCameraView = null;
+	private MediaRecorder videoRecorder = null;
+	private String videoFilePath = null;
+	private boolean isRecording = false;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +57,6 @@ public class MultiMediaViewerActivity extends Activity {
         animation.addAnimation(new ScaleAnimation(0.4f, 2, 0.4f, 2, 300, 400));
         animation.setDuration(4000);
         view.startAnimation(animation);
-        
         File dir = new File(Environment.getExternalStorageDirectory(), "MultiMediaViewer");
         if( !dir.exists()){
         	dir.mkdir();
@@ -61,6 +65,8 @@ public class MultiMediaViewerActivity extends Activity {
         soundFilePath = file.getAbsolutePath();
         file = new File(dir, "picture.jpg");
         pictureFilePath = file.getAbsolutePath();
+        file = new File(dir, "video.3gp");
+        videoFilePath = file.getAbsolutePath();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -134,6 +140,9 @@ public class MultiMediaViewerActivity extends Activity {
     		break;
     	case R.id.item3:
     		setupCameraView();
+    		break;
+    	case R.id.item4:
+    		setupVideoView();
     		break;
     	}
     	return true;
@@ -279,9 +288,43 @@ public class MultiMediaViewerActivity extends Activity {
     		if(cameraView != null){
     			callTakePicture();
     		}
+    		if(videoCameraView != null){
+    			startStopRecord();
+    		}
     	}
     	return true;
     }
-    
+    private void setupVideoView(){
+    	LinearLayout layout = new LinearLayout(this);
+    	layout.setOrientation(LinearLayout.VERTICAL);
+    	SurfaceHolder holder = videoCameraView.getHolder();
+    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    	layout.addView(videoCameraView);
+    	setContentView(layout);
+    }
+    private void startStopRecord(){
+    	try{
+    		if(isRecording){
+    			videoRecorder.stop();
+    			videoRecorder.release();
+    			videoRecorder = null;
+    			isRecording = false;
+    		}else{
+    			videoRecorder = new MediaRecorder();
+    			videoRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+    			videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+    			videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+    			videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+    			videoRecorder.setOutputFile(videoFilePath);
+    			videoRecorder.setVideoFrameRate(30);
+    			videoRecorder.setPreviewDisplay(videoCameraView.getHolder().getSurface());
+    			videoRecorder.prepare();
+    			isRecording =true;
+    		}
+    	}
+    	catch(Exception e){
+    		e.printStackTrace();
+    	}
+    }
     
 }
