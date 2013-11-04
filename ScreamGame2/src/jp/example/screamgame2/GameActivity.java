@@ -1,11 +1,13 @@
 package jp.example.screamgame2;
 
+import java.io.File;
 import java.io.FileOutputStream;
 
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -35,12 +37,11 @@ import android.widget.Toast;
 	private changeView1 right1 = null;
 	private changeView2 right2 = null;
 	private Bitmap resize_pic, pic;
-	private SurfaceView cameraView = null;
 	private Camera camera = null;
-	private String pictureFilePath = null;
+//	private String pictureFilePath = null;
 	private MediaRecorder videoRecorder = null;
 	private String videoFilePath = null;
-	private boolean isRecording = false;	
+//	private boolean isRecording = false;	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +62,15 @@ import android.widget.Toast;
 			String str = intent.getStringExtra("jp.example.screamgame2.GameActivity");
             Toast.makeText(this, str, Toast.LENGTH_LONG).show();
 		}
+		
+		File dir = new File(Environment.getExternalStorageDirectory(), "screamgame2_file");//録画用ファイル作成
+	   // if( !dir.exists()){
+	       dir.mkdir();
+	   // }
+		File file = new File(dir, "scream_video.3gp");//録画用ファイル
+		videoFilePath = file.getAbsolutePath();
 	}
+	
 	class changeView1 extends View{
 		private Paint paint1 = new Paint();
 		private Paint paint2 = new Paint();
@@ -116,44 +125,53 @@ import android.widget.Toast;
 		return true;
 	}
 	@Override
-	public boolean onTouchEvent(MotionEvent event){ 
-		if((event.getX()>110 && event.getX()<146)&&(event.getY()>380 && event.getY()<405) || 
-				(event.getX()>348 && event.getX()<381)&&(event.getY()>380 && event.getY()<405)){
-			Toast.makeText(this, "right1!!", Toast.LENGTH_SHORT).show();//正解の表示
-			right1 = new changeView1(this);//正解の丸
-			addContentView(right1, new LayoutParams(500, 500));//丸表示
-			startRecord();//カメラスタート
-			
-		}
-		if((event.getX()>125 && event.getX()<165)&&(event.getY()>540 && event.getY()<563)||
-				(event.getX()>385 && event.getX()<405)&&(event.getY()>540 && event.getY()<563)){
-			//Toast.makeText(this, "right2!!", Toast.LENGTH_SHORT).show();
-			//right2 = new changeView2(this);
-			//addContentView(right2, new LayoutParams(500, 700));//表示範囲（）
-			
-			//画像表示、音声、録画停止
-			
-			pic = BitmapFactory.decodeResource(getResources(), R.drawable.screampic1_2);
-			resize_pic = Bitmap.createScaledBitmap(pic, 100, 100, true);
-			
-			ImageView img = new ImageView(this);
-			img.setImageBitmap(resize_pic);
-			setContentView(img, new LayoutParams(700, 700));//恐怖画像表示
-//音声メソッド				
-//			player = MediaPlayer.create(GameActivity.this , );
-//			player.setOnCompletionListener(new OnCompletionListener(){
-//				public void onCompletion(MediaPlayer mp){
-//					player.release();player = null;
-//				}
-//			});
-//			player.start();
-			stopRecord();//少し遅らせて録画を停止handler?
-			
-		}
+	public boolean onTouchEvent(MotionEvent event){
 		
-		 android.util.Log.v("MotionEvent",
-			        "x = " + String.valueOf(event.getX()) + ", " +
-			        "y = " + String.valueOf(event.getY()));
+		switch(event.getAction()){ 
+		case MotionEvent.ACTION_DOWN :
+			if((event.getX()>100 && event.getX()<150)&&(event.getY()>370 && event.getY()<415) || 
+					(event.getX()>340 && event.getX()<390)&&(event.getY()>370 && event.getY()<415)){
+				Toast.makeText(this, "right1!!", Toast.LENGTH_SHORT).show();//正解の表示
+				right1 = new changeView1(this);//正解の丸
+				addContentView(right1, new LayoutParams(500, 500));//丸表示
+				
+	//			camera = Camera.open();//camera
+	
+	//			Camera.open();
+				
+				startRecord();//カメラスタート
+				
+			}
+			if((event.getX()>125 && event.getX()<165)&&(event.getY()>540 && event.getY()<563)||
+					(event.getX()>385 && event.getX()<405)&&(event.getY()>540 && event.getY()<563)){
+				//Toast.makeText(this, "right2!!", Toast.LENGTH_SHORT).show();
+				//right2 = new changeView2(this);
+				//addContentView(right2, new LayoutParams(500, 700));//表示範囲（）
+				
+				//画像表示、音声、録画停止
+				
+				pic = BitmapFactory.decodeResource(getResources(), R.drawable.screampic1_2);
+				resize_pic = Bitmap.createScaledBitmap(pic, 100, 100, true);
+				
+				ImageView img = new ImageView(this);
+				img.setImageBitmap(resize_pic);
+				setContentView(img, new LayoutParams(1000, 1000));//恐怖画像表示
+	//音声メソッド				
+	//			player = MediaPlayer.create(GameActivity.this , );
+	//			player.setOnCompletionListener(new OnCompletionListener(){
+	//				public void onCompletion(MediaPlayer mp){
+	//					player.release();player = null;
+	//				}
+	//			});
+	//			player.start();
+				stopRecord();//少し遅らせて録画を停止handler?
+				
+			}
+			
+			 android.util.Log.v("MotionEvent",
+				        "x = " + String.valueOf(event.getX()) + ", " +
+				        "y = " + String.valueOf(event.getY()));
+		}
 		return true;
 	}
 //	private void setupCameraView(){
@@ -198,55 +216,60 @@ import android.widget.Toast;
 //    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 //    	setContentView(cameraView);
 //    }
-    private void callTakePicture(){
-    	try{
-    		camera.takePicture(null, null, new Camera.PictureCallback(){
-    			public void onPictureTaken(byte[] data, Camera camera){    			
-    				try{
-    					FileOutputStream fos = new FileOutputStream(pictureFilePath);
-    					fos.write(data);
-    					fos.close();
-    					camera.startPreview();
-    				}
-    				catch(Exception e){
-    					e.printStackTrace();
-    				}
-    			}
-    		});
-    	}
-    	catch(Exception e){
-    		e.printStackTrace();
-    	}
-    }
+//    private void callTakePicture(){
+//    	try{
+//    		camera.takePicture(null, null, new Camera.PictureCallback(){
+//    			public void onPictureTaken(byte[] data, Camera camera){    			
+//    				try{
+//    					FileOutputStream fos = new FileOutputStream(pictureFilePath);
+//    					fos.write(data);
+//    					fos.close();
+//    					camera.startPreview();
+//    				}
+//    				catch(Exception e){
+//    					e.printStackTrace();
+//    				}
+//    			}
+//    		});
+//    	}
+//    	catch(Exception e){
+//    		e.printStackTrace();
+//    	}
+//    }
     private void startRecord(){
-    	try{	
+    	try{
     		videoRecorder = new MediaRecorder();
+			camera = Camera.open(1);//incamera
+    		camera.unlock();
+    		videoRecorder.setCamera(camera);
     		videoRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
     		videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
     		videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
     		videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-    		videoRecorder.setOutputFile("/sdcard/sample.3gp"); // 動画の出力先となるファイルパスを指定
+    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+    		videoRecorder.setOutputFile(videoFilePath); // 動画の出力先となるファイルパスを指定
     		videoRecorder.setVideoFrameRate(30);// 動画のフレームレートを指定
     		videoRecorder.setVideoSize(320, 240); // 動画のサイズを指定
     		videoRecorder.prepare();
+    		videoRecorder.start();
+    		android.util.Log.v("videoRecorder","start!!!");
     	}
     	catch(Exception e){
     		e.printStackTrace();
+    		android.util.Log.v("videoRecorder","strat error......");
     	}
-    	//カメラ起動,録画開始(カメラID＝１がインカメラ)
-		camera = Camera.open(1);
-		
     }
     private void stopRecord(){
     	try{
     		videoRecorder.stop();
 			videoRecorder.release();
 			videoRecorder = null;
-			isRecording = false;
+    		android.util.Log.v("videoRecorder","stop!!!");
+//			isRecording = false;
     	}
     	catch(Exception e){
     		e.printStackTrace();
+    		android.util.Log.v("videoRecorder","stop error......");
     	}
     }
     
