@@ -1,13 +1,12 @@
 package jp.example.screamgame2;
 
 import java.io.File;
-import java.io.FileOutputStream;
-
+import java.io.IOException;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -20,13 +19,10 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Region.Op;
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.view.Menu;
 import android.view.MotionEvent;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -41,7 +37,9 @@ import android.widget.Toast;
 //	private String pictureFilePath = null;
 	private MediaRecorder videoRecorder = null;
 	private String videoFilePath = null;
-//	private boolean isRecording = false;	
+	private int numberOfCameras = 0;
+	private int cameraId = 0;
+	private boolean isRecording;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +50,7 @@ import android.widget.Toast;
 
 //		requestWindowFeature(Window.FEATURE_NO_TITLE);
 //		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//		
+
 		ImageView iv = new ImageView(this);
 		iv.setImageResource(R.drawable.screamgame1_3);
 		addContentView(iv, new LayoutParams(490, 700));
@@ -63,11 +61,11 @@ import android.widget.Toast;
             Toast.makeText(this, str, Toast.LENGTH_LONG).show();
 		}
 		
-		File dir = new File(Environment.getExternalStorageDirectory(), "screamgame2_file");//録画用ファイル作成
-	   // if( !dir.exists()){
+		File dir = new File(Environment.getExternalStorageDirectory(), "screamGame2_file");//録画用ファイル作成
+	    if( !dir.exists()){
 	       dir.mkdir();
-	   // }
-		File file = new File(dir, "scream_video.3gp");//録画用ファイル
+	    }
+		File file = new File(dir, "screamGame2_video.3gp");//録画用ファイル
 		videoFilePath = file.getAbsolutePath();
 	}
 	
@@ -91,8 +89,7 @@ import android.widget.Toast;
 		    canvas1.clipPath(clipPath2, Op.DIFFERENCE);
 		    paint2.setColor(Color.RED);
 		    paint2.setAntiAlias(true);
-		    canvas1.drawCircle(377, 280, 30, paint2);
-		    
+		    canvas1.drawCircle(377, 280, 30, paint2); 
 		}
 	}
 	class changeView2 extends changeView1{
@@ -115,8 +112,7 @@ import android.widget.Toast;
 		    canvas2.clipPath(clipPath4, Op.DIFFERENCE);
 		    paint4.setColor(Color.RED);
 		    paint4.setAntiAlias(true);
-		    canvas2.drawCircle(390, 454, 30, paint4);
-		    
+		    canvas2.drawCircle(390, 454, 30, paint4);   
 		}
 	}
 	@Override
@@ -126,7 +122,7 @@ import android.widget.Toast;
 	}
 	@Override
 	public boolean onTouchEvent(MotionEvent event){
-		
+		isRecording = false;
 		switch(event.getAction()){ 
 		case MotionEvent.ACTION_DOWN :
 			if((event.getX()>100 && event.getX()<150)&&(event.getY()>370 && event.getY()<415) || 
@@ -134,144 +130,107 @@ import android.widget.Toast;
 				Toast.makeText(this, "right1!!", Toast.LENGTH_SHORT).show();//正解の表示
 				right1 = new changeView1(this);//正解の丸
 				addContentView(right1, new LayoutParams(500, 500));//丸表示
-				
-	//			camera = Camera.open();//camera
-	
-	//			Camera.open();
-				
+						
+				numberOfCameras = Camera.getNumberOfCameras(); //フロントカメラ、バックカメラの判別
+				CameraInfo cameraInfo = new CameraInfo();
+				for (int i = 0; i < numberOfCameras; i++) {
+					Camera.getCameraInfo(i, cameraInfo);
+					if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT){
+						cameraId = i;
+						camera = Camera.open(cameraId);
+					}else if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK){
+				    	camera = Camera.open();
+				    }
+				}
+				android.util.Log.v("set camera","ok");
+
 				startRecord();//カメラスタート
-				
 			}
 			if((event.getX()>125 && event.getX()<165)&&(event.getY()>540 && event.getY()<563)||
 					(event.getX()>385 && event.getX()<405)&&(event.getY()>540 && event.getY()<563)){
-				//Toast.makeText(this, "right2!!", Toast.LENGTH_SHORT).show();
-				//right2 = new changeView2(this);
-				//addContentView(right2, new LayoutParams(500, 700));//表示範囲（）
-				
-				//画像表示、音声、録画停止
+				Toast.makeText(this, "right2!!", Toast.LENGTH_SHORT).show();
+				right2 = new changeView2(this);
+				addContentView(right2, new LayoutParams(500, 700));//表示範囲（）
 				
 				pic = BitmapFactory.decodeResource(getResources(), R.drawable.screampic1_2);
-				resize_pic = Bitmap.createScaledBitmap(pic, 100, 100, true);
+				resize_pic = Bitmap.createScaledBitmap(pic, 100, 100, true);//リサイズ
 				
 				ImageView img = new ImageView(this);
 				img.setImageBitmap(resize_pic);
 				setContentView(img, new LayoutParams(1000, 1000));//恐怖画像表示
-	//音声メソッド				
-	//			player = MediaPlayer.create(GameActivity.this , );
-	//			player.setOnCompletionListener(new OnCompletionListener(){
-	//				public void onCompletion(MediaPlayer mp){
-	//					player.release();player = null;
-	//				}
-	//			});
-	//			player.start();
-				stopRecord();//少し遅らせて録画を停止handler?
-				
+				sound();//音声メソッド	
+				new Handler().postDelayed( delayStop, 2000);//2000msc録画を停止handler?
 			}
-			
-			 android.util.Log.v("MotionEvent",
-				        "x = " + String.valueOf(event.getX()) + ", " +
-				        "y = " + String.valueOf(event.getY()));
+			 android.util.Log.v("MotionEvent", "x = " + String.valueOf(event.getX()) + ", " + "y = " + String.valueOf(event.getY()));
+			 break;	
 		}
 		return true;
 	}
-//	private void setupCameraView(){
-//    	cameraView = new SurfaceView(this);
-//    	SurfaceHolder holder = cameraView.getHolder();
-//    	holder.addCallback(new SurfaceHolder.Callback(){
-//    		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
-//    			try{
-//    				WindowManager manager = (WindowManager)getSystemService(WINDOW_SERVICE);
-//    				int r = manager.getDefaultDisplay().getRotation();
-//    				int d = 0;
-//    				switch(r){
-//    				case Surface.ROTATION_0: d = 90; break;
-//    				case Surface.ROTATION_90: d = 0; break;
-//    				case Surface.ROTATION_180: d = 270; break;
-//    				case Surface.ROTATION_270: d = 180; break;
-//    				}
-//    				camera.setDisplayOrientation(d);
-//    				camera.startPreview();
-//    				
-//    			}
-//    			catch(Exception e){
-//    				e.printStackTrace();
-//    			}
-//    		}
-//    		@SuppressLint("NewApi") public void surfaceCreated(SurfaceHolder holder){
-//    			try{
-//    				camera = Camera.open();
-//    				camera.setPreviewDisplay(holder);
-//    			}
-//       			catch(Exception e){
-//    				e.printStackTrace();
-//       			}
-//    		}
-//    		public void surfaceDestroyed(SurfaceHolder holder){
-//    			camera.setPreviewCallback(null);
-//    			camera.stopPreview();
-//    			camera.release();
-//    			camera = null;
-//    		}
-//    	});
-//    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-//    	setContentView(cameraView);
-//    }
-//    private void callTakePicture(){
-//    	try{
-//    		camera.takePicture(null, null, new Camera.PictureCallback(){
-//    			public void onPictureTaken(byte[] data, Camera camera){    			
-//    				try{
-//    					FileOutputStream fos = new FileOutputStream(pictureFilePath);
-//    					fos.write(data);
-//    					fos.close();
-//    					camera.startPreview();
-//    				}
-//    				catch(Exception e){
-//    					e.printStackTrace();
-//    				}
-//    			}
-//    		});
-//    	}
-//    	catch(Exception e){
-//    		e.printStackTrace();
-//    	}
-//    }
+
     private void startRecord(){
     	try{
-    		videoRecorder = new MediaRecorder();
-			camera = Camera.open(1);//incamera
-    		camera.unlock();
-    		videoRecorder.setCamera(camera);
-    		videoRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-    		videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-    		videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-    		videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-    		videoRecorder.setOutputFile(videoFilePath); // 動画の出力先となるファイルパスを指定
-    		videoRecorder.setVideoFrameRate(30);// 動画のフレームレートを指定
-    		videoRecorder.setVideoSize(320, 240); // 動画のサイズを指定
-    		videoRecorder.prepare();
-    		videoRecorder.start();
-    		android.util.Log.v("videoRecorder","start!!!");
+    		if(isRecording != false){
+    			videoRecorder.stop();
+    			videoRecorder.release();
+    			videoRecorder = null;
+    			camera.lock();
+    			isRecording = false;
+    		}else{
+    			camera.unlock();    			
+	    		videoRecorder = new MediaRecorder();
+	    		videoRecorder.setCamera(camera);
+	    		videoRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+	    		videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+	    		videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+	    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+	    		videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+	    		videoRecorder.setOutputFile(videoFilePath); // 動画の出力先となるファイルパスを指定
+	    		videoRecorder.setVideoFrameRate(30);// 動画のフレームレートを指定
+	    		videoRecorder.setVideoSize(320, 240); // 動画のサイズを指定
+	    		videoRecorder.prepare();
+	    		videoRecorder.start();
+	    		isRecording = true;
+	    		android.util.Log.v("videoRecorder","start!!!");
+    		}
     	}
     	catch(Exception e){
     		e.printStackTrace();
     		android.util.Log.v("videoRecorder","strat error......");
     	}
     }
-    private void stopRecord(){
-    	try{
-    		videoRecorder.stop();
-			videoRecorder.release();
-			videoRecorder = null;
-    		android.util.Log.v("videoRecorder","stop!!!");
-//			isRecording = false;
+
+    private final Runnable delayStop = new Runnable() {
+    	@Override
+    	public void run(){
+        	try{
+        		videoRecorder.stop();
+    			videoRecorder.release();
+    			videoRecorder = null;
+    			camera.lock();
+    			isRecording = false;
+        		android.util.Log.v("videoRecorder","stop!!!");
+        	}
+        	catch(Exception e){
+        		e.printStackTrace();
+        		android.util.Log.v("videoRecorder","stop error......");
+        	}
     	}
-    	catch(Exception e){
-    		e.printStackTrace();
-    		android.util.Log.v("videoRecorder","stop error......");
-    	}
+    };
+    private void sound(){
+	    player = MediaPlayer.create(GameActivity.this , R.raw.takao_voice);
+		if (player.isPlaying()) { //再生中
+	        player.stop();
+	        try {
+	            player.prepare();
+	        } catch (IllegalStateException e) {
+	            e.printStackTrace();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    else { //停止中
+	        player.start();
+	        android.util.Log.v("player","voice start!");
+	    }
     }
-    
-	
 }
