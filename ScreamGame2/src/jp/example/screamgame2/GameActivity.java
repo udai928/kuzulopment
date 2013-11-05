@@ -2,6 +2,9 @@ package jp.example.screamgame2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
+import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -20,8 +23,11 @@ import android.graphics.Path;
 import android.graphics.Region.Op;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Size;
 import android.view.Menu;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -40,6 +46,8 @@ import android.widget.Toast;
 	private int numberOfCameras = 0;
 	private int cameraId = 0;
 	private boolean isRecording;
+	private SurfaceHolder v_holder;
+	private SurfaceView mySurfaceView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +69,6 @@ import android.widget.Toast;
             Toast.makeText(this, str, Toast.LENGTH_LONG).show();
 		}
 		
-		File dir = new File(Environment.getExternalStorageDirectory(), "screamGame2_file");//録画用ファイル作成
-	    if( !dir.exists()){
-	       dir.mkdir();
-	    }
-		File file = new File(dir, "screamGame2_video.3gp");//録画用ファイル
-		videoFilePath = file.getAbsolutePath();
 	}
 	
 	class changeView1 extends View{
@@ -130,19 +132,6 @@ import android.widget.Toast;
 				Toast.makeText(this, "right1!!", Toast.LENGTH_SHORT).show();//正解の表示
 				right1 = new changeView1(this);//正解の丸
 				addContentView(right1, new LayoutParams(500, 500));//丸表示
-						
-				numberOfCameras = Camera.getNumberOfCameras(); //フロントカメラ、バックカメラの判別
-				CameraInfo cameraInfo = new CameraInfo();
-				for (int i = 0; i < numberOfCameras; i++) {
-					Camera.getCameraInfo(i, cameraInfo);
-					if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT){
-						cameraId = i;
-						camera = Camera.open(cameraId);
-					}else if (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK){
-				    	camera = Camera.open();
-				    }
-				}
-				android.util.Log.v("set camera","ok");
 
 				startRecord();//カメラスタート
 			}
@@ -168,6 +157,13 @@ import android.widget.Toast;
 	}
 
     private void startRecord(){
+    	
+    	mySurfaceView = (SurfaceView) findViewById(R.drawable.screamgame1_3);
+		addContentView(mySurfaceView, new LayoutParams(490, 700));
+    	SurfaceHolder holder = mySurfaceView.getHolder();
+    	holder.addCallback(mSurfaceListener);
+    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
     	try{
     		if(isRecording != false){
     			videoRecorder.stop();
@@ -175,16 +171,39 @@ import android.widget.Toast;
     			videoRecorder = null;
     			camera.lock();
     			isRecording = false;
-    		}else{
-    			camera.unlock();    			
+    		}else{    			
 	    		videoRecorder = new MediaRecorder();
-	    		videoRecorder.setCamera(camera);
-	    		videoRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+	        	
+	    		numberOfCameras = Camera.getNumberOfCameras(); //フロントカメラ、バックカメラの判別
+	    		CameraInfo cameraInfo = new CameraInfo();
+	    		for (int i = 0; i < numberOfCameras; i++) {
+	    			Camera.getCameraInfo(i, cameraInfo);
+	    			android.util.Log.v("cameraId", ""+i);
+	    			if (cameraInfo.facing == CameraInfo.CAMERA_FACING_FRONT){
+	    				cameraId = i;
+	    			}
+	    		}
+	    		camera = Camera.open(cameraId); 
+	    		camera.unlock();
+	    		android.util.Log.v("set camera","ok");
+	        	
+	    		videoRecorder.setVideoSource(cameraId);
 	    		videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 	    		videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
 	    		videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+	    		
+//	    		CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+//	    	    videoRecorder.setProfile(cpHigh);
+
+	    		File dir = new File(Environment.getExternalStorageDirectory(), "screamGame2_file");//録画用ファイル作成
+	    	    if( !dir.exists()){
+	    	       dir.mkdir();
+	    	    }
+	    		File file = new File(dir, "screamGame2_video.3gp");//録画用ファイル
+	    		videoFilePath = file.getAbsolutePath();	    		
 	    		videoRecorder.setOutputFile(videoFilePath); // 動画の出力先となるファイルパスを指定
+	    		
 	    		videoRecorder.setVideoFrameRate(30);// 動画のフレームレートを指定
 	    		videoRecorder.setVideoSize(320, 240); // 動画のサイズを指定
 	    		videoRecorder.prepare();
@@ -198,6 +217,49 @@ import android.widget.Toast;
     		android.util.Log.v("videoRecorder","strat error......");
     	}
     }
+    
+    private SurfaceHolder.Callback mSurfaceListener = new SurfaceHolder.Callback() {
+    	 
+    	  public void surfaceCreated(SurfaceHolder holder) {
+    	   // TODO Auto-generated method stub
+    	    
+    	   try {
+    	    camera.setPreviewDisplay(holder);
+    	   } catch (Exception e) {
+    	    e.printStackTrace();
+    	   }
+    	  }
+    	 
+    	  public void surfaceDestroyed(SurfaceHolder holder) {
+    		  camera.setPreviewCallback(null);
+    		  camera.stopPreview();
+    		  camera.release();
+    		  camera = null;
+    	  }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+    	    int height) {
+    	   // TODO Auto-generated method stub
+    	   v_holder = holder; // SurfaceHolderを保存
+    	   camera.stopPreview();
+    	   Camera.Parameters parameters = camera.getParameters();
+    	    
+    	   List<Size> asizeSupport = parameters.getSupportedPreviewSizes();
+    	   //一番小さいプレビューサイズを利用
+    	   Size size = asizeSupport.get(asizeSupport.size() - 1);
+    	   parameters.setPreviewSize(size.width,size.height);
+    	   android.util.Log.d("size1", "w=" + String.valueOf(width) + "h=" + String.valueOf(height));// 
+    	   android.util.Log.d("size2", "w=" + String.valueOf(size.width) + "h=" + String.valueOf(size.height));// 
+    	    
+    	   LayoutParams paramLayout;
+    	   paramLayout = mySurfaceView.getLayoutParams();
+    	   paramLayout.width = size.width;
+    	   paramLayout.height = size.height;
+    	   mySurfaceView.setLayoutParams(paramLayout);
+   
+    	   camera.startPreview();//
+    	  }
+};
 
     private final Runnable delayStop = new Runnable() {
     	@Override
@@ -216,8 +278,8 @@ import android.widget.Toast;
         	}
     	}
     };
-    private void sound(){
-	    player = MediaPlayer.create(GameActivity.this , R.raw.takao_voice);
+    private void sound(){    	
+	    player = MediaPlayer.create(GameActivity.this , R.raw.takao_voice1_2);
 		if (player.isPlaying()) { //再生中
 	        player.stop();
 	        try {
