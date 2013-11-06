@@ -2,9 +2,6 @@ package jp.example.screamgame2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-
-import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -23,11 +20,8 @@ import android.graphics.Path;
 import android.graphics.Region.Op;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.Size;
 import android.view.Menu;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -46,8 +40,6 @@ import android.widget.Toast;
 	private int numberOfCameras = 0;
 	private int cameraId = 0;
 	private boolean isRecording;
-	private SurfaceHolder v_holder;
-	private SurfaceView mySurfaceView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +121,7 @@ import android.widget.Toast;
 		case MotionEvent.ACTION_DOWN :
 			if((event.getX()>100 && event.getX()<150)&&(event.getY()>370 && event.getY()<415) || 
 					(event.getX()>340 && event.getX()<390)&&(event.getY()>370 && event.getY()<415)){
+				
 				Toast.makeText(this, "right1!!", Toast.LENGTH_SHORT).show();//正解の表示
 				right1 = new changeView1(this);//正解の丸
 				addContentView(right1, new LayoutParams(500, 500));//丸表示
@@ -137,6 +130,7 @@ import android.widget.Toast;
 			}
 			if((event.getX()>125 && event.getX()<165)&&(event.getY()>540 && event.getY()<563)||
 					(event.getX()>385 && event.getX()<405)&&(event.getY()>540 && event.getY()<563)){
+				
 				Toast.makeText(this, "right2!!", Toast.LENGTH_SHORT).show();
 				right2 = new changeView2(this);
 				addContentView(right2, new LayoutParams(500, 700));//表示範囲（）
@@ -147,8 +141,10 @@ import android.widget.Toast;
 				ImageView img = new ImageView(this);
 				img.setImageBitmap(resize_pic);
 				setContentView(img, new LayoutParams(1000, 1000));//恐怖画像表示
+				
 				sound();//音声メソッド	
-				new Handler().postDelayed( delayStop, 2000);//2000msc録画を停止handler?
+				
+				new Handler().postDelayed( delayStop, 2000);//2000msc録画を停止
 			}
 			 android.util.Log.v("MotionEvent", "x = " + String.valueOf(event.getX()) + ", " + "y = " + String.valueOf(event.getY()));
 			 break;	
@@ -157,12 +153,6 @@ import android.widget.Toast;
 	}
 
     private void startRecord(){
-    	
-    	mySurfaceView = (SurfaceView) findViewById(R.drawable.screamgame1_3);
-		addContentView(mySurfaceView, new LayoutParams(490, 700));
-    	SurfaceHolder holder = mySurfaceView.getHolder();
-    	holder.addCallback(mSurfaceListener);
-    	holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
     	try{
     		if(isRecording != false){
@@ -172,7 +162,6 @@ import android.widget.Toast;
     			camera.lock();
     			isRecording = false;
     		}else{    			
-	    		videoRecorder = new MediaRecorder();
 	        	
 	    		numberOfCameras = Camera.getNumberOfCameras(); //フロントカメラ、バックカメラの判別
 	    		CameraInfo cameraInfo = new CameraInfo();
@@ -183,18 +172,17 @@ import android.widget.Toast;
 	    				cameraId = i;
 	    			}
 	    		}
-	    		camera = Camera.open(cameraId); 
-	    		camera.unlock();
+//	    		camera = Camera.open(cameraId); 
+//	    		camera.unlock();
 	    		android.util.Log.v("set camera","ok");
+
+	    		videoRecorder = new MediaRecorder();
 	        	
 	    		videoRecorder.setVideoSource(cameraId);
 	    		videoRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 	    		videoRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    		videoRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
 	    		videoRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-	    		
-//	    		CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-//	    	    videoRecorder.setProfile(cpHigh);
 
 	    		File dir = new File(Environment.getExternalStorageDirectory(), "screamGame2_file");//録画用ファイル作成
 	    	    if( !dir.exists()){
@@ -217,50 +205,7 @@ import android.widget.Toast;
     		android.util.Log.v("videoRecorder","strat error......");
     	}
     }
-    
-    private SurfaceHolder.Callback mSurfaceListener = new SurfaceHolder.Callback() {
-    	 
-    	  public void surfaceCreated(SurfaceHolder holder) {
-    	   // TODO Auto-generated method stub
-    	    
-    	   try {
-    	    camera.setPreviewDisplay(holder);
-    	   } catch (Exception e) {
-    	    e.printStackTrace();
-    	   }
-    	  }
-    	 
-    	  public void surfaceDestroyed(SurfaceHolder holder) {
-    		  camera.setPreviewCallback(null);
-    		  camera.stopPreview();
-    		  camera.release();
-    		  camera = null;
-    	  }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-    	    int height) {
-    	   // TODO Auto-generated method stub
-    	   v_holder = holder; // SurfaceHolderを保存
-    	   camera.stopPreview();
-    	   Camera.Parameters parameters = camera.getParameters();
-    	    
-    	   List<Size> asizeSupport = parameters.getSupportedPreviewSizes();
-    	   //一番小さいプレビューサイズを利用
-    	   Size size = asizeSupport.get(asizeSupport.size() - 1);
-    	   parameters.setPreviewSize(size.width,size.height);
-    	   android.util.Log.d("size1", "w=" + String.valueOf(width) + "h=" + String.valueOf(height));// 
-    	   android.util.Log.d("size2", "w=" + String.valueOf(size.width) + "h=" + String.valueOf(size.height));// 
-    	    
-    	   LayoutParams paramLayout;
-    	   paramLayout = mySurfaceView.getLayoutParams();
-    	   paramLayout.width = size.width;
-    	   paramLayout.height = size.height;
-    	   mySurfaceView.setLayoutParams(paramLayout);
    
-    	   camera.startPreview();//
-    	  }
-};
-
     private final Runnable delayStop = new Runnable() {
     	@Override
     	public void run(){
@@ -268,7 +213,6 @@ import android.widget.Toast;
         		videoRecorder.stop();
     			videoRecorder.release();
     			videoRecorder = null;
-    			camera.lock();
     			isRecording = false;
         		android.util.Log.v("videoRecorder","stop!!!");
         	}
